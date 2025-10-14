@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16
+    container_name: evaluareperiodica-db
+    environment:
+      POSTGRES_USER: epuser
+      POSTGRES_PASSWORD: epsecret
+      POSTGRES_DB: epdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - ep-network
+
+  app:
+    build:
+      context: src/main/java/usarb/web/ep
+      dockerfile: src/main/java/usarb/web/ep/Dockerfile
+    container_name: usarbweb
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: epuser
+      DB_PASS: epsecret
+      DB_NAME: epdb
+      PORT: 3000
+    depends_on:
+      - db
+    networks:
+      - ep-network
+
+volumes:
+  pgdata:
+
+networks:
+  ep-network:
+    driver: bridge
