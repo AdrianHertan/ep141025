@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:16
-    container_name: evaluareperiodica-db
+    image: postgres:15
+    restart: always
     environment:
       POSTGRES_USER: epuser
       POSTGRES_PASSWORD: epsecret
@@ -12,31 +12,19 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-    networks:
-      - ep-network
 
   app:
-    build:
-      context: src/main/java/usarb/web/ep
-      dockerfile: src/main/java/usarb/web/ep/Dockerfile
-    container_name: usarbweb
-    ports:
-      - "3000:3000"
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: epuser
-      DB_PASS: epsecret
-      DB_NAME: epdb
-      PORT: 3000
+    build: .
     depends_on:
       - db
-    networks:
-      - ep-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/epdb
+      SPRING_DATASOURCE_USERNAME: epuser
+      SPRING_DATASOURCE_PASSWORD: epsecret
+      SERVER_PORT: 3000
+    ports:
+      - "3000:3000"
+    restart: on-failure
 
 volumes:
   pgdata:
-
-networks:
-  ep-network:
-    driver: bridge
